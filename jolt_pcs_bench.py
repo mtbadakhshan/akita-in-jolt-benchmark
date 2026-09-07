@@ -352,17 +352,26 @@ def main() -> None:
     required_isa, features = native_features()
     out.mkdir(parents=True, exist_ok=True)
     records = load_records(out)
+    completed = {
+        (row["scheme"], row["cycles_log2"], row["threads"], row["sample"])
+        for row in records
+        if row.get("status") == "ok"
+    }
     schemes = (args.scheme,) if args.scheme else SCHEMES
     for scheme in schemes:
         binary = build(source, scheme, environment(max(args.threads), source))
         for scale in args.scales:
             for threads in args.threads:
                 for sample in range(args.samples + 1):
+                    identity = (scheme, scale, threads, sample)
+                    if identity in completed:
+                        continue
                     record = run_sample(
                         source, binary, out, commit, required_isa, features,
                         scheme, scale, threads, sample,
                     )
                     records.append(record)
+                    completed.add(identity)
                     write_records(out, records)
     render_report(out)
 
