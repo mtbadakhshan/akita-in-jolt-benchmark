@@ -39,6 +39,6 @@ every exact benchmark command.
 - `verify_seconds`: deserialize plus full Jolt verification;
 - `proof_bytes`: the serialized Jolt proof returned by the daemon;
 - `peak_rss_bytes`: the proof child's Linux `VmHWM`;
-- `total_seconds`: request handling through verification and artifact creation.
+- `total_seconds`: request handling through proof serialization and verification.
 
 See [docs/methodology.md](docs/methodology.md) for comparability constraints.

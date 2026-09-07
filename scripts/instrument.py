@@ -92,13 +92,15 @@ replace_once(
 replace_once(
     prove,
     "        let total_duration = start.elapsed().as_secs_f64();\n",
-    "        let verify_duration = verify_start.elapsed().as_secs_f64();\n",
+    """        let verify_duration = verify_start.elapsed().as_secs_f64();
+
+        let total_duration = start.elapsed().as_secs_f64();
+""",
 )
 replace_once(
     prove,
     "        ProofResponse::success(prove_duration, verified, proof_size, artifacts)\n",
-    """        let total_duration = start.elapsed().as_secs_f64();
-        ProofResponse::success(prove_duration, verified, proof_size, artifacts)
+    """        ProofResponse::success(prove_duration, verified, proof_size, artifacts)
             .with_benchmark_metrics(
                 verify_duration,
                 total_duration,
