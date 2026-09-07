@@ -22,6 +22,20 @@ THREADS = (1, 8)
 SCHEMES = ("akita", "dory")
 COMMIT_SPAN = {"akita": "akita_main_commit_with_precommitted", "dory": "commit_witness"}
 RUSTFLAGS = "-C target-cpu=native"
+TIMING_COLUMNS = (
+    "benchmark_name",
+    "scale",
+    "prover_time_s",
+    "trace_length",
+    "proving_hz",
+    "proof_size",
+    "proof_size_compressed",
+    "backend",
+    "setup_time_s",
+    "verifier_parallel_time_s",
+    "verifier_single_thread_time_s",
+    "verifier_parallel_threads",
+)
 
 
 def command_output(*command: str, cwd: Path | None = None, env=None) -> str:
@@ -203,7 +217,10 @@ def run_sample(
         raise RuntimeError(f"expected one upstream run directory, found {sorted(created)}")
     upstream_run = created.pop()
     with (upstream_run / "timings.csv").open(newline="") as stream:
-        row = next(csv.DictReader(stream))
+        values = next(csv.reader(stream))
+    if len(values) != len(TIMING_COLUMNS):
+        raise RuntimeError(f"unexpected upstream timing row with {len(values)} columns")
+    row = dict(zip(TIMING_COLUMNS, values, strict=True))
 
     cell = out / "raw" / f"{scheme}-2p{scale}-t{threads}" / f"sample-{sample}"
     cell.mkdir(parents=True, exist_ok=True)
