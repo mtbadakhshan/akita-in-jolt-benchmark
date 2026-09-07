@@ -176,6 +176,9 @@ def collect_cell(
     bundled_protoc = Path(__file__).resolve().parent / ".tools/protoc/bin/protoc"
     if bundled_protoc.exists():
         env["PROTOC"] = str(bundled_protoc)
+    bundled_grpcurl = Path(__file__).resolve().parent / ".tools/grpcurl"
+    if bundled_grpcurl.exists():
+        env["PATH"] = f"{bundled_grpcurl}:{env.get('PATH', '')}"
     env.update(
         {
             "RAYON_NUM_THREADS": str(threads),
