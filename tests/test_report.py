@@ -10,11 +10,13 @@ def test_commitment_seconds_reads_complete_spans(tmp_path: Path) -> None:
         json.dumps(
             [
                 {"ph": "X", "name": "CommitmentScheme::commit_batch", "dur": 1_250_000},
+                {"ph": "B", "name": "commit_witness", "pid": 1, "tid": 2, "ts": 10},
+                {"ph": "E", "name": "commit_witness", "pid": 1, "tid": 2, "ts": 500_010},
                 {"ph": "X", "name": "unrelated", "dur": 9_000_000},
             ]
         )
     )
-    assert commitment_seconds(trace) == 1.25
+    assert commitment_seconds(trace) == 1.75
 
 
 def test_aggregate_uses_medians() -> None:

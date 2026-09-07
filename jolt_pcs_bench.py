@@ -89,11 +89,24 @@ def _trace_events(path: Path) -> list[dict]:
 
 
 def commitment_seconds(path: Path) -> float | None:
-    """Sum complete commitment spans in a Chrome trace."""
+    """Sum commitment spans in complete-event or begin/end Chrome traces."""
     total_us = 0.0
+    open_spans: dict[tuple[object, object, str], list[float]] = {}
     for event in _trace_events(path):
-        if event.get("ph") == "X" and event.get("name") in COMMIT_SPANS:
+        name = event.get("name")
+        if name not in COMMIT_SPANS:
+            continue
+        phase = event.get("ph")
+        if phase == "X":
             total_us += float(event.get("dur", 0.0))
+        elif phase == "B":
+            key = (event.get("pid"), event.get("tid"), name)
+            open_spans.setdefault(key, []).append(float(event["ts"]))
+        elif phase == "E":
+            key = (event.get("pid"), event.get("tid"), name)
+            starts = open_spans.get(key)
+            if starts:
+                total_us += float(event["ts"]) - starts.pop()
     return total_us / 1_000_000 if total_us else None
 
 
