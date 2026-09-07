@@ -340,18 +340,20 @@ def main() -> None:
     if args.action == "matrix":
         matrix()
     elif args.action == "compare":
-        render_report(args.results)
+        render_report(args.results.resolve())
     else:
-        verify_source(args.source)
+        source = args.source.resolve()
+        out = args.out.resolve()
+        verify_source(source)
         schemes = (args.scheme,) if args.scheme else SCHEMES
-        args.out.mkdir(parents=True, exist_ok=True)
+        out.mkdir(parents=True, exist_ok=True)
         for scheme in schemes:
             first = True
             for scale in args.scales:
                 for threads in args.threads:
                     collect_cell(
-                        args.source,
-                        args.out,
+                        source,
+                        out,
                         scheme,
                         scale,
                         threads,
@@ -359,7 +361,7 @@ def main() -> None:
                         args.skip_build or not first,
                     )
                     first = False
-        render_report(args.out)
+        render_report(out)
 
 
 if __name__ == "__main__":
