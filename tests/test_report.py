@@ -1,22 +1,10 @@
-import json
-from pathlib import Path
-
-from jolt_pcs_bench import aggregate, commitment_seconds
+from jolt_pcs_bench import aggregate, parse_commit_seconds, parse_duration
 
 
-def test_commitment_seconds_reads_complete_spans(tmp_path: Path) -> None:
-    trace = tmp_path / "trace.json"
-    trace.write_text(
-        json.dumps(
-            [
-                {"ph": "X", "name": "CommitmentScheme::commit_batch", "dur": 1_250_000},
-                {"ph": "B", "name": "commit_witness", "pid": 1, "tid": 2, "ts": 10},
-                {"ph": "E", "name": "commit_witness", "pid": 1, "tid": 2, "ts": 500_010},
-                {"ph": "X", "name": "unrelated", "dur": 9_000_000},
-            ]
-        )
-    )
-    assert commitment_seconds(trace) == 1.75
+def test_span_close_duration_parsing() -> None:
+    log = "commit_witness{columns=42}: close time.busy=1.25s time.idle=10.0µs"
+    assert parse_commit_seconds(log, "dory") == 1.25
+    assert parse_duration("250ms") == 0.25
 
 
 def test_aggregate_uses_medians() -> None:
@@ -28,14 +16,16 @@ def test_aggregate_uses_medians() -> None:
             "commit_seconds": n,
             "prove_seconds": n * 2,
             "verify_seconds": n / 1000,
+            "setup_seconds": n / 10,
             "proof_bytes": n * 1000,
             "peak_rss_bytes": n * 1024**3,
+            "warmup": False,
         }
         for n in (1, 9, 2)
     ]
     result = aggregate(rows)[("akita", 20, 1)]
-    assert result["commit"] == 2
-    assert result["prove"] == 4
-    assert result["verify_ms"] == 2
-    assert result["proof_kb"] == 2
-    assert result["rss_gib"] == 2
+    assert result["commit_seconds"] == 2
+    assert result["prove_seconds"] == 4
+    assert result["verify_seconds"] == 0.002
+    assert result["proof_bytes"] == 2000
+    assert result["peak_rss_bytes"] == 2 * 1024**3

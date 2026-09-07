@@ -1,37 +1,39 @@
 # Methodology
 
 1. Every measured proof must serialize to nonzero bytes and verify.
-2. Jolt and its nested Jolt dependency are immutable commit pins.
-3. The guest ELF is identical across cells. Only its declared trace cap and
-   deterministic `sha2-chain` iteration input change with the cycle row.
-4. Each proof runs in a forked child. Proof 1 is warmup; measured values are
-   the median of proofs 2 through 4.
+2. The source is `https://github.com/a16z/jolt`. `main` is resolved once, then
+   detached; its exact SHA is retained in every observation.
+3. The upstream modular `jolt-prover profile` harness supplies the guest,
+   deterministic `sha2-chain` input, trace cap, setup, serialization, and
+   full-verification gate.
+4. Each sample is a fresh process. Sample 0 is warmup; measured values are
+   the median of samples 1 through 3.
 5. `RAYON_NUM_THREADS` is fixed to the row's 1- or 8-thread cap.
 6. Raw responses, traces, logs, commands, provenance, and JSONL are retained.
 7. Akita and Dory cells run on the same physical machine in one session.
+8. `RUSTFLAGS=-C target-cpu=native` is fixed. x86_64 runs must expose
+   `avx512f`; Apple Silicon runs must expose `neon`. The native feature set is
+   recorded, and results from different architectures never form ratios.
 
 ## Comparability limitation
 
 This is an integration comparison, not a bit-identical PCS microbenchmark.
-Jolt's Akita feature selects the packed Akita field and cycle-major trace
-polynomial order. Its Dory feature selects BN254 and address-major order.
-Those differences are required by the current integrations and must be stated
-with every headline table. Guest code, deterministic input rule, trace cap,
-compiler, committed-program mode, Rust-only backend, Jolt protocol stages,
-machine, and thread cap are held fixed.
+Jolt's Akita feature selects the packed field and cycle-major representation;
+Dory selects BN254 and its homomorphic representation. The upstream profile
+harness fixes the guest, input rule, trace cap, reference backend tier,
+protocol stages, machine, compiler, and CPU affinity.
 
 ## Timing boundaries
 
-Input generation, guest tracing, daemon startup, PCS setup, and reusable
-program preprocessing are outside `prove_seconds`. The prove interval includes
-Jolt witness materialization, opening-instance commitment, all sumchecks, and
-the final PCS opening. Verification is separately timed after serializing and
-deserializing the proof.
+Input generation, guest tracing, and non-PCS preprocessing are outside
+`prove_seconds`. The prove interval includes witness materialization,
+commitment, all sumchecks, and the final PCS opening. PCS setup, parallel
+verification, and single-thread verification are timed separately upstream.
 
-Chrome tracing is enabled for both implementations so commitment spans are
-measured under the same instrumentation. `commit_seconds` sums the
-backend-neutral stage-0 commitment spans. `peak_rss_bytes` is Linux `VmHWM`
-read in the isolated proof child after verification.
+The upstream `default` tracing format emits span-close timings without
+retaining enormous Chrome traces. `commit_seconds` uses `commit_witness` for
+Dory and `akita_main_commit_with_precommitted` for Akita. Peak RSS and exact
+proof bytes are the upstream profile harness's own metrics.
 
 ## Statistics
 
