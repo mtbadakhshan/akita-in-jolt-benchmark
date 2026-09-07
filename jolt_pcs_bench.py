@@ -331,6 +331,8 @@ def main() -> None:
     run.add_argument("--out", type=Path, required=True)
     run.add_argument("--scheme", choices=SCHEMES)
     run.add_argument("--samples", type=int, default=3)
+    run.add_argument("--scales", type=int, nargs="+", choices=SCALES, default=SCALES)
+    run.add_argument("--threads", type=int, nargs="+", choices=THREADS, default=THREADS)
     run.add_argument("--skip-build", action="store_true")
     compare = sub.add_parser("compare")
     compare.add_argument("results", type=Path)
@@ -345,8 +347,8 @@ def main() -> None:
         args.out.mkdir(parents=True, exist_ok=True)
         for scheme in schemes:
             first = True
-            for scale in SCALES:
-                for threads in THREADS:
+            for scale in args.scales:
+                for threads in args.threads:
                     collect_cell(
                         args.source,
                         args.out,
