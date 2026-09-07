@@ -189,7 +189,7 @@ def run_sample(
         "--format",
         "default",
         "--backend",
-        "reference",
+        "optimized",
     ]
     command, cpu_list = affinity_command(command, threads)
     env = environment(threads, source)

@@ -20,7 +20,7 @@
 This is an integration comparison, not a bit-identical PCS microbenchmark.
 Jolt's Akita feature selects the packed field and cycle-major representation;
 Dory selects BN254 and its homomorphic representation. The upstream profile
-harness fixes the guest, input rule, trace cap, reference backend tier,
+harness fixes the guest, input rule, trace cap, optimized backend tier,
 protocol stages, machine, compiler, and CPU affinity.
 
 ## Timing boundaries
