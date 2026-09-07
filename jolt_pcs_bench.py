@@ -173,6 +173,9 @@ def collect_cell(
     )
     (cell / "command.txt").write_text(rendered + "\n")
     env = os.environ.copy()
+    bundled_protoc = Path(__file__).resolve().parent / ".tools/protoc/bin/protoc"
+    if bundled_protoc.exists():
+        env["PROTOC"] = str(bundled_protoc)
     env.update(
         {
             "RAYON_NUM_THREADS": str(threads),

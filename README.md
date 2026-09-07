@@ -13,6 +13,7 @@ Raw JSONL is the source of truth. Markdown is regenerated from it.
 ## Reproduce
 
 ```sh
+./scripts/bootstrap-protoc.sh
 ./scripts/fetch-jolt.sh third_party/jolt-cpp
 python3 jolt_pcs_bench.py matrix
 python3 jolt_pcs_bench.py run \
