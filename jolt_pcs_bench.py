@@ -58,7 +58,7 @@ def native_features() -> tuple[str, set[str]]:
     return required, features
 
 
-def environment(threads: int) -> dict[str, str]:
+def environment(threads: int, source: Path | None = None) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
         {
@@ -68,10 +68,25 @@ def environment(threads: int) -> dict[str, str]:
             "NO_COLOR": "1",
         }
     )
+    if source is not None:
+        tools = source / "target/benchmark-tools/release"
+        env["PATH"] = f"{tools}:{env['PATH']}"
     return env
 
 
 def build(source: Path, scheme: str, env: dict[str, str]) -> Path:
+    tools = source / "target/benchmark-tools"
+    cli = tools / "release/jolt"
+    if not cli.exists():
+        subprocess.run(
+            [
+                "cargo", "build", "--release", "--locked", "-p", "jolt",
+                "--bin", "jolt", "--target-dir", str(tools),
+            ],
+            cwd=source,
+            env=env,
+            check=True,
+        )
     target = source / f"target/benchmark-{scheme}"
     features = "profiling,akita" if scheme == "akita" else "profiling"
     command = [
@@ -177,7 +192,7 @@ def run_sample(
         "reference",
     ]
     command, cpu_list = affinity_command(command, threads)
-    env = environment(threads)
+    env = environment(threads, source)
     before = run_directories(source)
     completed = subprocess.run(command, cwd=source, env=env, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     log = completed.stdout
@@ -198,6 +213,7 @@ def run_sample(
         [
             f"RUSTFLAGS='{RUSTFLAGS}'",
             f"RAYON_NUM_THREADS={threads}",
+            f"PATH='{source}/target/benchmark-tools/release:$PATH'",
             *command,
         ]
     )
@@ -321,7 +337,7 @@ def main() -> None:
     records = load_records(out)
     schemes = (args.scheme,) if args.scheme else SCHEMES
     for scheme in schemes:
-        binary = build(source, scheme, environment(max(args.threads)))
+        binary = build(source, scheme, environment(max(args.threads), source))
         for scale in args.scales:
             for threads in args.threads:
                 for sample in range(args.samples + 1):
