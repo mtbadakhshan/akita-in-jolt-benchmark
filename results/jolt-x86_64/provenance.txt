@@ -1,0 +1,10 @@
+repository=https://github.com/a16z/jolt
+jolt_commit=7de83dd18839f567e6b88e860d53b0202116654f
+architecture=x86_64
+os=Linux 7.0.0 x86_64, glibc 2.43
+cpu_model=AMD Ryzen 9 9950X 16-Core Processor
+logical_cpus=32
+required_isa=avx512f
+rustflags=-C target-cpu=native -C target-feature=+avx512f
+cpu_affinity=0
+memory_bytes=130142986240

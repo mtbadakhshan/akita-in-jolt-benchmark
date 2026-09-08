@@ -9,3 +9,4 @@ jolt-pcs-bench = "jolt_pcs_bench:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]

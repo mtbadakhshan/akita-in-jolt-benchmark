@@ -6,3 +6,4 @@ __pycache__/
 /results/*
 !/results/jolt-x86_64/
 !/results/jolt-x86_64/**
+/results/jolt-x86_64/raw/
